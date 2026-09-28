@@ -1,0 +1,91 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api
+      NEXT_PUBLIC_SOCKET_URL: http://localhost:3001
+    ports:
+      - "3000:3000"
+    volumes:
+      - canteengo_product_images:/app/apps/web/public/images/uploads
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://canteengo:canteengo@postgres:5432/canteengo
+      REDIS_URL: redis://redis:6379
+      PORT: 3001
+      WEB_ORIGIN: http://localhost:3000
+      JWT_ACCESS_SECRET: canteengo-local-access-secret-change-in-production
+      JWT_REFRESH_SECRET: canteengo-local-refresh-secret-change-in-production
+      JWT_ACCESS_TTL: 15m
+      JWT_REFRESH_TTL_DAYS: 30
+      UPLOAD_DIR: /app/uploads
+      PRODUCT_IMAGE_DIR: /app/product-images
+      PRODUCT_IMAGE_URL_PREFIX: /images/uploads
+      SEED_DEMO_PASSWORD: CanteenGo@123
+    ports:
+      - "3001:3001"
+    volumes:
+      - canteengo_uploads:/app/uploads
+      - canteengo_product_images:/app/product-images
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3001/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: canteengo
+      POSTGRES_PASSWORD: canteengo
+      POSTGRES_DB: canteengo
+      TZ: UTC
+    ports:
+      - "5434:5432"
+    volumes:
+      - canteengo_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U canteengo -d canteengo"]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - canteengo_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  canteengo_db:
+  canteengo_redis:
+  canteengo_uploads:
+  canteengo_product_images:
+

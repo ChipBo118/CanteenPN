@@ -1,0 +1,2 @@
+import { StudentHeader } from '@/components/student-header'; import { RequireSession } from '@/components/require-session'; import { OrdersList } from '@/features/orders/orders-list';
+export default function Page(){return <><StudentHeader/><RequireSession roles={['STUDENT']}><main className="container-shell py-10"><p className="eyebrow">Theo dõi thời gian thực</p><h1 className="mb-8 mt-2 text-4xl font-black">Đơn của tôi</h1><OrdersList/></main></RequireSession></>}

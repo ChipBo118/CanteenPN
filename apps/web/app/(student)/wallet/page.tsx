@@ -1,0 +1,1 @@
+import { StudentPage } from '@/components/student-page'; import { WalletClient } from '@/features/student/wallet-client'; export default function Page(){return <StudentPage eyebrow="Thanh toán không tiền mặt" title="Ví CanteenPN"><WalletClient/></StudentPage>}

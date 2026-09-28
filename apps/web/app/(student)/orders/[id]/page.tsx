@@ -1,0 +1,2 @@
+import { StudentHeader } from '@/components/student-header'; import { RequireSession } from '@/components/require-session'; import { OrderDetail } from '@/features/orders/order-detail';
+export default async function Page({params}:{params:Promise<{id:string}>}){const {id}=await params;return <><StudentHeader/><RequireSession roles={['STUDENT']}><main className="container-shell py-10"><OrderDetail id={id}/></main></RequireSession></>}

@@ -1,0 +1,36 @@
+# Local backup
+backup/
+
+# Dependencies and package-manager stores
+node_modules/
+.pnpm-store/
+
+# Build output and caches
+dist/
+.next/
+.turbo/
+.cache/
+coverage/
+.nyc_output/
+*.tsbuildinfo
+.eslintcache
+
+# Runtime-generated data
+uploads/
+.local-postgres/
+*.pid
+*.pid.lock
+
+# Logs
+*.log
+*.log.*
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+Desktop.ini

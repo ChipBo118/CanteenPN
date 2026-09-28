@@ -1,0 +1,3 @@
+import { LoaderCircle } from 'lucide-react';
+export function LoadingState({ label = 'Đang tải dữ liệu…' }: { label?: string }) { return <div className="surface grid min-h-48 place-items-center rounded-3xl p-8"><div className="text-center"><LoaderCircle className="mx-auto animate-spin text-brand-600"/><p className="mt-3 text-sm text-[color:var(--muted)]">{label}</p></div></div>; }
+export function EmptyState({ title = 'Chưa có dữ liệu', detail = 'Dữ liệu mới sẽ xuất hiện tại đây.' }: { title?: string; detail?: string }) { return <div className="surface rounded-3xl p-12 text-center"><p className="text-lg font-black">{title}</p><p className="mt-2 text-sm text-[color:var(--muted)]">{detail}</p></div>; }

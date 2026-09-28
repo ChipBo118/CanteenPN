@@ -1,0 +1,1 @@
+import { StudentPage } from '@/components/student-page'; import { StudentAccount } from '@/features/student/student-account'; export default function Page(){return <StudentPage eyebrow="Lưu để đặt nhanh" title="Món yêu thích"><StudentAccount mode="favorites"/></StudentPage>}

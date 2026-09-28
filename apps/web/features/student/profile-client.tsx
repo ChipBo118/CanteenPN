@@ -1,0 +1,27 @@
+'use client';
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Camera, KeyRound, UserRound } from 'lucide-react';
+import { useState } from 'react';
+import { LoadingState } from '@/components/loading-state';
+import { StatusBadge } from '@/components/status-badge';
+import { API_URL, apiRequest, authHeaders, formatMoney } from '@/lib/api';
+import { useAuthStore } from '@/lib/auth-store';
+
+type Me = { email:string; role:string; status:string; avatarUrl?:string; studentProfile?:{ studentDirectory:{fullName:string;studentCode:string;faculty:string;major:string;className:string;academicYear:string}; wallet?:{balance:number;status:string}; loyaltyAccount?:{points:number}; _count:{orders:number;studentVouchers:number} } };
+
+export function ProfileClient() {
+  const token = useAuthStore(state => state.accessToken);
+  const queryClient = useQueryClient();
+  const [passwords, setPasswords] = useState({ currentPassword:'', newPassword:'', confirmPassword:'' });
+  const [message, setMessage] = useState('');
+  const query = useQuery({ queryKey:['profile'], queryFn:()=>apiRequest<Me>('/auth/me',{headers:authHeaders(token)}), enabled:!!token });
+  const upload = useMutation({ mutationFn:async(file:File)=>{ const body=new FormData(); body.append('avatar',file); const response=await fetch(`${API_URL}/auth/profile/avatar`,{method:'POST',headers:authHeaders(token),credentials:'include',body}); const result=await response.json(); if(!response.ok)throw result; return result; }, onSuccess:()=>{setMessage('Đã cập nhật ảnh đại diện.');queryClient.invalidateQueries({queryKey:['profile']})}, onError:(error:any)=>setMessage(error.message??'Không thể tải ảnh.') });
+  const change = useMutation({ mutationFn:()=>apiRequest('/auth/change-password',{method:'POST',headers:authHeaders(token),body:JSON.stringify(passwords)}), onSuccess:()=>{setMessage('Đã đổi mật khẩu và thu hồi các phiên đăng nhập khác.');setPasswords({currentPassword:'',newPassword:'',confirmPassword:''})}, onError:(error:any)=>setMessage(error.message??'Không thể đổi mật khẩu.') });
+  if(query.isLoading||!query.data)return <LoadingState/>;
+  const me=query.data; const p=me.studentProfile;
+  const avatar=me.avatarUrl?.startsWith('http')?me.avatarUrl:`${API_URL.replace(/\/api$/,'')}${me.avatarUrl??''}`;
+  return <div className="grid gap-6 lg:grid-cols-[1.2fr_.8fr]"><section className="surface rounded-4xl p-7"><div className="flex flex-col gap-5 sm:flex-row sm:items-center"><div className="relative"><span className="grid h-24 w-24 overflow-hidden place-items-center rounded-3xl bg-brand-50 text-brand-700">{me.avatarUrl?<img src={avatar} alt="Ảnh đại diện" className="h-full w-full object-cover"/>:<UserRound size={40}/>}</span><label className="absolute -bottom-2 -right-2 grid h-10 w-10 cursor-pointer place-items-center rounded-full bg-brand-600 text-white shadow-lg" title="Đổi ảnh đại diện"><Camera size={18}/><input type="file" className="sr-only" accept="image/jpeg,image/png,image/webp" onChange={event=>{const file=event.target.files?.[0];if(file)upload.mutate(file)}}/></label></div><div><h2 className="text-2xl font-black">{p?.studentDirectory.fullName??me.email.split('@')[0]}</h2><p className="text-[color:var(--muted)]">{me.email}</p><div className="mt-2"><StatusBadge value={me.status}/></div></div></div>{message&&<p className="mt-5 rounded-2xl bg-brand-50 p-3 text-sm font-bold text-brand-700">{message}</p>}<dl className="mt-8 grid gap-4 sm:grid-cols-2"><Info label="Mã sinh viên" value={p?.studentDirectory.studentCode}/><Info label="Khoa" value={p?.studentDirectory.faculty}/><Info label="Ngành" value={p?.studentDirectory.major}/><Info label="Lớp" value={p?.studentDirectory.className}/><Info label="Niên khóa" value={p?.studentDirectory.academicYear}/><Info label="Vai trò" value={me.role}/></dl><div className="mt-6 grid gap-3 sm:grid-cols-4"><Metric label="Số dư ví" value={formatMoney(p?.wallet?.balance??0)}/><Metric label="Điểm" value={`${p?.loyaltyAccount?.points??0}`}/><Metric label="Voucher" value={`${p?._count.studentVouchers??0}`}/><Metric label="Đơn hoàn tất" value={`${p?._count.orders??0}`}/></div></section><section className="surface h-fit rounded-4xl p-7"><KeyRound className="text-brand-600"/><h2 className="mt-4 text-xl font-black">Đổi mật khẩu</h2><p className="mt-2 text-sm text-[color:var(--muted)]">Tối thiểu 8 ký tự, có chữ hoa, chữ thường và số.</p><div className="mt-5 space-y-4">{([['currentPassword','Mật khẩu hiện tại'],['newPassword','Mật khẩu mới'],['confirmPassword','Xác nhận mật khẩu']] as const).map(([key,label])=><label key={key} className="block"><span className="mb-2 block text-sm font-bold">{label}</span><input type="password" className="field" value={passwords[key]} onChange={event=>setPasswords({...passwords,[key]:event.target.value})}/></label>)}<button onClick={()=>change.mutate()} disabled={change.isPending} className="button-primary w-full">Cập nhật mật khẩu</button></div></section></div>;
+}
+function Info({label,value}:{label:string;value?:string}){return <div className="rounded-2xl border p-4"><dt className="text-xs font-bold uppercase text-[color:var(--muted)]">{label}</dt><dd className="mt-1 font-black">{value??'—'}</dd></div>}
+function Metric({label,value}:{label:string;value:string}){return <div className="rounded-2xl bg-brand-50 p-4 text-brand-900 dark:bg-brand-900/30 dark:text-brand-100"><p className="text-xs font-bold">{label}</p><p className="mt-1 text-lg font-black">{value}</p></div>}

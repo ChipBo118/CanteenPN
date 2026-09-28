@@ -1,0 +1,2 @@
+const labels: Record<string,string> = { PENDING:'Chờ xác nhận', ACCEPTED:'Đã nhận', PREPARING:'Đang chế biến', READY:'Sẵn sàng', COMPLETED:'Hoàn tất', CANCELLED:'Đã hủy', REJECTED:'Từ chối', PAID:'Đã thanh toán', WAITING:'Đang chờ', CLAIMED:'Đã nhận món', DONE:'Hoàn tất', ACTIVE:'Hoạt động', LOCKED:'Đã khóa', INACTIVE:'Ngừng hoạt động', SCHEDULED:'Đã xếp lịch', PRESENT:'Đúng giờ', LATE:'Đi muộn', LEFT_EARLY:'Về sớm', ABSENT:'Vắng mặt' };
+export function StatusBadge({ value }: { value: string }) { return <span className="status-pill">{labels[value] ?? value}</span>; }

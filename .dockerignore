@@ -1,0 +1,46 @@
+# Local backup and Git metadata
+backup
+.git
+
+# Dependencies and package-manager stores
+node_modules
+**/node_modules
+.pnpm-store
+**/.pnpm-store
+
+# Build output and caches
+dist
+**/dist
+.next
+**/.next
+.turbo
+**/.turbo
+.cache
+**/.cache
+coverage
+**/coverage
+.nyc_output
+**/.nyc_output
+**/*.tsbuildinfo
+**/.eslintcache
+
+# Runtime-generated data
+uploads
+**/uploads
+.local-postgres
+**/*.pid
+**/*.pid.lock
+
+# Logs
+**/*.log
+**/*.log.*
+
+# Local environment files
+.env
+**/.env
+**/.env.*
+
+# Operating-system files
+**/.DS_Store
+**/Thumbs.db
+**/Desktop.ini

@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --background: #fbfaf5;
+  --foreground: #17362f;
+  --surface: #ffffff;
+  --muted: #6f817c;
+  --border: #e5ebe8;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0f1715;
+  --foreground: #e8f3ef;
+  --surface: #17211f;
+  --muted: #9fb4ad;
+  --border: #29403a;
+}
+
+* { border-color: var(--border); }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-be-vietnam-pro), Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+@media (max-width: 767px) {
+  body { padding-bottom: 66px; }
+}
+
+:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 3px;
+}
+
+@layer components {
+  .container-shell { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
+  .surface { background: var(--surface); @apply border shadow-[0_5px_20px_rgba(30,64,54,.035)]; }
+  .button-primary { @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-brand-600 px-5 py-2.5 font-bold text-white shadow-[0_10px_24px_rgba(8,127,91,.20)] transition hover:-translate-y-0.5 hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50; }
+  .button-secondary { @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] border bg-white px-5 py-2.5 font-bold text-brand-900 transition hover:border-brand-600 hover:bg-brand-50 dark:bg-[#17211f] dark:text-white; }
+  .eyebrow { @apply text-xs font-bold uppercase tracking-[0.18em] text-brand-600; }
+  .field { @apply h-12 w-full rounded-xl border bg-[color:var(--surface)] px-4 text-sm outline-none transition focus:border-brand-600 focus:ring-4 focus:ring-brand-50 dark:focus:ring-brand-900/30; }
+  .status-pill { @apply inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700 dark:bg-brand-900/40 dark:text-brand-100; }
+  .table-shell { @apply overflow-x-auto rounded-3xl border bg-[color:var(--surface)]; }
+  .data-table { @apply min-w-full text-left text-sm; }
+  .data-table th { @apply border-b bg-brand-50/70 px-4 py-3 text-xs uppercase tracking-wide text-brand-900 dark:bg-brand-900/20 dark:text-brand-100; }
+  .data-table td { @apply border-b px-4 py-3 align-top; }
+}
+
+@media print {
+  header, nav, button, [role="dialog"] { display: none !important; }
+  body { background: white; color: #111; }
+  main, .container-shell { max-width: none !important; padding: 0 !important; }
+  .surface { box-shadow: none !important; border-color: #bbb !important; break-inside: avoid; }
+}
+

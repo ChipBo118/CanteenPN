@@ -1,0 +1,2 @@
+import { StudentHeader } from './student-header'; import { RequireSession } from './require-session';
+export function StudentPage({eyebrow,title,children}:{eyebrow:string;title:string;children:React.ReactNode}){return <><StudentHeader/><RequireSession roles={['STUDENT']}><main className="container-shell py-10"><p className="eyebrow">{eyebrow}</p><h1 className="mb-8 mt-2 text-4xl font-black">{title}</h1>{children}</main></RequireSession></>}

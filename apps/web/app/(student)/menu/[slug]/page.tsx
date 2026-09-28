@@ -1,0 +1,1 @@
+import { StudentHeader } from '@/components/student-header'; import { ProductDetail } from '@/features/menu/product-detail'; export default async function Page({params}:{params:Promise<{slug:string}>}){const {slug}=await params;return <><StudentHeader/><main className="container-shell py-10"><ProductDetail slug={slug}/></main></>}

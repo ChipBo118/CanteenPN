@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Ảnh đại diện sinh viên mặc định">
+  <rect width="256" height="256" rx="64" fill="#d4f8ea"/>
+  <circle cx="128" cy="95" r="44" fill="#008c68"/>
+  <path d="M48 226c7-55 35-83 80-83s73 28 80 83" fill="#008c68"/>
+  <path d="M67 68l61-28 61 28-61 28z" fill="#153f36"/>
+  <path d="M184 72v49" stroke="#f59e0b" stroke-width="9" stroke-linecap="round"/>
+</svg>

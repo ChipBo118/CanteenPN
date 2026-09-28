@@ -1,0 +1,25 @@
+{
+  "name": "canteengo",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "dev": "turbo dev --parallel",
+    "dev:web": "pnpm --filter @canteengo/web dev",
+    "dev:api": "pnpm --filter @canteengo/api start:dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "db:validate": "pnpm --filter @canteengo/api prisma:validate",
+    "db:generate": "pnpm --filter @canteengo/api prisma:generate",
+    "db:migrate": "pnpm --filter @canteengo/api prisma:migrate",
+    "db:deploy": "pnpm --filter @canteengo/api prisma:deploy",
+    "db:setup": "pnpm db:deploy && pnpm db:seed",
+    "db:seed": "pnpm --filter @canteengo/api db:seed"
+  },
+  "devDependencies": {
+    "turbo": "latest",
+    "typescript": "^5.9.3"
+  }
+}

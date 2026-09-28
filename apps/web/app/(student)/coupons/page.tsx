@@ -1,0 +1,1 @@
+import { StudentPage } from '@/components/student-page'; import { CouponsClient } from '@/features/student/coupons-client'; export default function Page(){return <StudentPage eyebrow="Ưu đãi dành riêng" title="Coupon & voucher"><CouponsClient/></StudentPage>}

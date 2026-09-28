@@ -1,0 +1,1 @@
+import { StudentPage } from '@/components/student-page'; import { StudentAccount } from '@/features/student/student-account'; export default function Page(){return <StudentPage eyebrow="Cập nhật mới nhất" title="Thông báo"><StudentAccount mode="notifications"/></StudentPage>}
