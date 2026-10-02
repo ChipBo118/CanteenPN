@@ -9,6 +9,76 @@ Tài liệu này triển khai hệ thống theo kiến trúc:
 
 Redis không bắt buộc khi Render chỉ chạy một API instance.
 
+## Trạng thái triển khai hiện tại
+
+| Thành phần | Nơi chạy/lưu trữ | Tên hoặc địa chỉ hiện tại | Nơi quản lý |
+| --- | --- | --- | --- |
+| Mã nguồn | GitHub | `ChipBo118/CanteenPN`, nhánh `main` | [GitHub](https://github.com/ChipBo118/CanteenPN) |
+| Giao diện web | Vercel | [https://canteenpn.vercel.app](https://canteenpn.vercel.app) | [Vercel Dashboard](https://vercel.com/dashboard) |
+| Backend/API và Socket.IO | Render | `canteenpn-api`, [health check](https://canteenpn-api.onrender.com/api/health) | [Render Dashboard](https://dashboard.render.com) |
+| PostgreSQL | Neon | Project `CanteenPN`, database `neondb` | [Neon Console](https://console.neon.tech) |
+| Ảnh tải lên | Cloudinary | Ảnh đại diện và ảnh món ăn | [Cloudinary Console](https://console.cloudinary.com) |
+
+Máy tính cá nhân **không phải máy chủ production**. Sau khi code đã được push lên GitHub và deploy thành công, có thể tắt máy tính mà website vẫn hoạt động. GitHub chỉ lưu mã nguồn và kích hoạt auto-deploy; request của người dùng được Vercel và Render xử lý, còn dữ liệu nằm trên Neon và Cloudinary.
+
+Luồng một request production:
+
+```text
+Trình duyệt
+  -> Vercel (Next.js, canteenpn.vercel.app)
+  -> /api được chuyển tiếp tới Render (NestJS)
+  -> Render đọc/ghi PostgreSQL trên Neon
+  -> Render tải và đọc ảnh trên Cloudinary
+```
+
+## Quản lý, tắt và bật dự án
+
+### Cập nhật phiên bản mới
+
+GitHub là điểm bắt đầu của việc cập nhật. Push vào nhánh `main` sẽ khiến Render tự deploy backend và Vercel tự deploy frontend theo cấu hình của từng nền tảng:
+
+```powershell
+git status
+git add .
+git commit -m "mô tả thay đổi"
+git push origin main
+```
+
+Theo dõi quá trình tại **Deploys** trên Render và **Deployments** trên Vercel. Không cần để máy tính mở sau khi `git push` hoàn tất.
+
+### Khởi động lại backend
+
+1. Mở Render Dashboard và chọn `canteenpn-api`.
+2. Mở trang **Deploys**.
+3. Chọn **Manual Deploy → Restart service** để khởi động lại đúng commit/cấu hình đang chạy.
+4. Nếu muốn lấy code mới nhất từ GitHub, chọn **Deploy latest commit**.
+5. Chờ trạng thái **Live**, sau đó mở `/api/health` để kiểm tra.
+
+Restart hoặc redeploy không xóa dữ liệu Neon. Khi database đã có dữ liệu, startup sẽ bỏ qua seed.
+
+### Tắt và bật tạm thời
+
+- **Render:** trong danh sách service, chọn `canteenpn-api`, mở menu hành động và chọn **Suspend**. Khi cần bật lại, chọn **Resume**. Khi backend bị suspend, giao diện Vercel vẫn mở được nhưng đăng nhập, menu và các chức năng dữ liệu sẽ không hoạt động.
+- **Vercel:** project có thể được pause bằng chức năng pause project/API của Vercel. Khi project bị pause, URL production trả lỗi `503 DEPLOYMENT_PAUSED`. Để bật lại, mở project → **Settings** và chọn **Resume Service** trong thông báo project đang pause.
+- **Render Free tự ngủ:** nếu không có truy cập khoảng 15 phút, Render tự spin down. Đây không phải tắt dự án và không cần thao tác bật; request hoặc kết nối WebSocket tiếp theo sẽ tự đánh thức service, thường làm lần mở đầu chậm 30–60 giây.
+- **Neon và Cloudinary:** không cần tắt khi tạm ngừng website. Giữ hai dịch vụ này để database và ảnh không bị mất.
+
+Muốn tắt toàn bộ khả năng truy cập công khai, pause Vercel và suspend Render. Muốn mở lại, resume Render trước, kiểm tra health, rồi resume Vercel.
+
+Không chọn **Delete Project/Service** chỉ để tắt tạm thời. Xóa Vercel hoặc Render làm mất cấu hình deploy; xóa Neon có thể làm mất toàn bộ database; xóa tài nguyên Cloudinary có thể làm mất ảnh.
+
+### Quản lý hằng ngày
+
+| Việc cần làm | Nơi thao tác |
+| --- | --- |
+| Xem code, commit, nhánh | GitHub |
+| Xem build frontend, domain và biến `API_PROXY_TARGET` | Vercel |
+| Xem log API, restart, deploy và biến bí mật | Render |
+| Xem bảng/dữ liệu, dung lượng và connection string | Neon |
+| Xem, tìm và xóa ảnh đã tải lên | Cloudinary |
+
+Không sao chép `DATABASE_URL`, API secret Cloudinary hoặc JWT secret vào GitHub, README, ảnh chụp màn hình hay tin nhắn công khai.
+
 ## 0. Chuẩn bị
 
 Cần có tài khoản GitHub, [Neon](https://console.neon.tech), [Cloudinary](https://console.cloudinary.com), [Render](https://dashboard.render.com) và [Vercel](https://vercel.com/dashboard).
