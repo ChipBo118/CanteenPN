@@ -375,6 +375,19 @@ async function seedNotificationsAndAudit(identity: Awaited<ReturnType<typeof see
 }
 
 async function main() {
+  if (process.argv.includes('--if-empty')) {
+    const counts = await Promise.all([
+      prisma.user.count(),
+      prisma.category.count(),
+      prisma.order.count(),
+      prisma.canteenSetting.count(),
+    ]);
+    if (counts.some(count => count > 0)) {
+      console.log('Database đã có dữ liệu; bỏ qua việc nạp dữ liệu mẫu tự động.');
+      return;
+    }
+  }
+
   console.log('Đang xóa toàn bộ dữ liệu nghiệp vụ hiện tại...');
   await resetDatabase();
   const passwordHash = await argon2.hash(password);

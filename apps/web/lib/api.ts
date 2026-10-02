@@ -1,4 +1,6 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL
+  ?? (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:3001/api');
+export const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL ?? API_URL.replace(/\/api$/, '');
 
 export type ApiFailure = { statusCode: number; code: string; message: string; details?: unknown };
 

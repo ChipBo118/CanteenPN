@@ -13,5 +13,5 @@ RUN pnpm install --frozen-lockfile
 COPY apps/api apps/api
 RUN pnpm --filter @canteengo/api prisma:generate && pnpm --filter @canteengo/api build
 EXPOSE 3001
-CMD ["sh", "-c", "pnpm --filter @canteengo/api db:setup && pnpm --filter @canteengo/api start"]
+CMD ["sh", "-c", "pnpm --filter @canteengo/api db:init && pnpm --filter @canteengo/api start"]
 

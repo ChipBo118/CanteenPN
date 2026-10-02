@@ -9,6 +9,56 @@ CanteenPN là hệ thống quản lý căng tin gồm:
 
 Repository sử dụng pnpm workspace và Prisma. Có thể chạy toàn bộ bằng Docker hoặc chạy native trên máy.
 
+## Triển khai miễn phí: Vercel + Render + Neon + Cloudinary
+
+Kiến trúc production được chuẩn bị theo hướng sau:
+
+- **Vercel** chạy giao diện Next.js.
+- **Render** chạy một instance NestJS API và Socket.IO.
+- **Neon** lưu PostgreSQL lâu dài, độc lập với vòng đời máy chủ Render.
+- **Cloudinary** lưu ảnh đại diện và ảnh món ăn lâu dài.
+- Redis chưa bắt buộc khi chỉ chạy một API instance. Có thể bổ sung Redis sau nếu mở rộng thành nhiều instance.
+
+### 1. Tạo các dịch vụ dữ liệu
+
+1. Tạo PostgreSQL project miễn phí trên Neon và sao chép connection string vào `DATABASE_URL`.
+2. Tạo Cloudinary account miễn phí và lấy `cloud name`, `API key`, `API secret`.
+
+### 2. Deploy API lên Render
+
+Repository đã có `render.yaml`. Trong Render, chọn **New Blueprint**, kết nối repository và điền các biến đang để `sync: false`:
+
+| Biến | Giá trị |
+| --- | --- |
+| `DATABASE_URL` | Connection string của Neon |
+| `WEB_ORIGIN` | URL Vercel, ví dụ `https://canteenpn.vercel.app` |
+| `CLOUDINARY_CLOUD_NAME` | Cloud name của Cloudinary |
+| `CLOUDINARY_API_KEY` | API key của Cloudinary |
+| `CLOUDINARY_API_SECRET` | API secret của Cloudinary |
+| `SEED_DEMO_PASSWORD` | Mật khẩu tài khoản demo do bạn chọn |
+
+Hai JWT secret được Render tự sinh. Khi container khởi động, migration luôn được áp dụng nhưng dữ liệu mẫu chỉ được nạp nếu database hoàn toàn trống. Khởi động lại hoặc deploy lại không xóa dữ liệu đang có.
+
+Sau khi deploy, kiểm tra `https://<ten-dich-vu>.onrender.com/api/health`.
+
+### 3. Deploy web lên Vercel
+
+Import cùng repository vào Vercel, giữ Root Directory ở thư mục gốc và thêm:
+
+| Biến | Giá trị |
+| --- | --- |
+| `API_PROXY_TARGET` | URL Render không có `/api`, ví dụ `https://canteenpn-api.onrender.com` |
+| `NEXT_PUBLIC_SOCKET_URL` | Cùng URL Render ở trên |
+
+Không cần đặt `NEXT_PUBLIC_API_URL` trên Vercel: trình duyệt gọi `/api` cùng domain Vercel, sau đó rewrite chuyển tiếp đến Render. Sau lần deploy đầu tiên, cập nhật `WEB_ORIGIN` trên Render bằng đúng URL Vercel rồi deploy lại API.
+
+### 4. Nạp lại dữ liệu mẫu khi cần
+
+- `pnpm db:init`: chạy migration và chỉ seed nếu database trống; an toàn cho startup/deploy.
+- `pnpm db:seed`: chủ động xóa dữ liệu nghiệp vụ hiện tại và tạo lại toàn bộ dữ liệu mẫu.
+
+Muốn đặt lại database Neon, chạy `pnpm db:seed` từ máy local với `DATABASE_URL` tạm thời trỏ tới Neon. Đây là thao tác phá hủy dữ liệu hiện có, vì vậy hãy kiểm tra đúng database trước khi chạy.
+
 ## Phần 1 — Khởi chạy bằng Docker
 
 ### 1. Yêu cầu
@@ -40,7 +90,7 @@ Compose sẽ tự động:
 2. Build image cho web và API.
 3. Tạo Prisma Client.
 4. Chạy toàn bộ migration.
-5. Seed dữ liệu demo.
+5. Seed dữ liệu demo nếu database đang trống.
 6. Khởi động và healthcheck các dịch vụ.
 
 Theo dõi trạng thái:
@@ -90,7 +140,7 @@ Xóa cả volume và toàn bộ dữ liệu demo:
 docker compose down -v
 ```
 
-> Cảnh báo: `docker compose down -v` xóa database, Redis data và file upload trong Docker volumes. Ngoài ra, API hiện chạy seed khi container API khởi động; seed dùng cho môi trường demo và sẽ đặt lại dữ liệu nghiệp vụ.
+> Cảnh báo: `docker compose down -v` xóa database, Redis data và file upload trong Docker volumes. Khởi động lại API thông thường không đặt lại dữ liệu nghiệp vụ.
 
 ### 7. Lỗi Docker thường gặp
 
@@ -181,10 +231,10 @@ Nếu PostgreSQL chạy cổng khác, chỉ cần sửa cổng trong `DATABASE_U
 
 ```powershell
 pnpm db:generate
-pnpm db:setup
+pnpm db:init
 ```
 
-`db:setup` chạy migration rồi seed dữ liệu mẫu. Seed sẽ xóa và tạo lại dữ liệu nghiệp vụ, vì vậy chỉ dùng trên database mới hoặc database phát triển.
+`db:init` chạy migration và chỉ seed khi database trống. Khi chủ động muốn xóa dữ liệu nghiệp vụ rồi tải lại bộ dữ liệu mẫu, chạy `pnpm db:seed`.
 
 ### 6. Khởi chạy web và API
 
@@ -288,4 +338,4 @@ Quy trình test đăng ký:
 5. Gửi biểu mẫu. Họ tên, mã sinh viên, lớp và ngành được liên kết tự động từ `StudentDirectory`.
 6. Sau khi đăng ký thành công, email đó không thể dùng để đăng ký lần thứ hai.
 
-Danh sách này chỉ đúng ngay sau khi chạy seed. Muốn đặt lại toàn bộ dữ liệu demo, chạy lại `pnpm db:setup` ở môi trường native hoặc tạo lại Docker volumes ở môi trường Docker.
+Danh sách này chỉ đúng ngay sau khi chạy seed. Muốn đặt lại toàn bộ dữ liệu demo, chạy `pnpm db:seed`. Lệnh này xóa dữ liệu nghiệp vụ hiện có trước khi tạo lại dữ liệu mẫu.

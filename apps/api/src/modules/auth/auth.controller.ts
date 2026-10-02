@@ -6,9 +6,8 @@ import { CurrentUser, Public } from '../../common/auth.decorators';
 import type { AuthUser } from '../../common/auth-user';
 import { AuthService } from './auth.service';
 import { ChangePasswordDto, ForgotPasswordDto, LoginDto, RegisterStudentDto, ResetPasswordDto } from './auth.dto';
-import { mkdir, writeFile } from 'node:fs/promises';
-import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
+import { storeImage } from '../../common/image-storage';
 
 const COOKIE = 'canteengo_refresh';
 
@@ -50,12 +49,15 @@ export class AuthController {
     if (!file || !['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) throw new BadRequestException('Chỉ chấp nhận ảnh JPEG, PNG hoặc WebP tối đa 2 MB.');
     const signatures = { 'image/jpeg': [0xff, 0xd8, 0xff], 'image/png': [0x89, 0x50, 0x4e, 0x47], 'image/webp': [0x52, 0x49, 0x46, 0x46] } as const;
     if (!signatures[file.mimetype as keyof typeof signatures].every((byte, index) => file.buffer[index] === byte)) throw new BadRequestException('Nội dung tệp ảnh không hợp lệ.');
-    const extension = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }[file.mimetype];
-    const uploadDir = resolve(process.env.UPLOAD_DIR ?? './uploads', 'avatars');
-    await mkdir(uploadDir, { recursive: true });
-    const filename = `${user.sub}-${randomUUID()}.${extension}`;
-    await writeFile(resolve(uploadDir, filename), file.buffer, { flag: 'wx' });
-    return this.auth.updateAvatar(user.sub, `/uploads/avatars/${filename}`);
+    const avatarUrl = await storeImage({
+      buffer: file.buffer,
+      mimetype: file.mimetype,
+      folder: 'avatars',
+      publicIdPrefix: user.sub,
+      localDirectory: resolve(process.env.UPLOAD_DIR ?? './uploads', 'avatars'),
+      localUrlPrefix: '/uploads/avatars',
+    });
+    return this.auth.updateAvatar(user.sub, avatarUrl);
   }
 }
 

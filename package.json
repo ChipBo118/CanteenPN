@@ -15,6 +15,7 @@
     "db:generate": "pnpm --filter @canteengo/api prisma:generate",
     "db:migrate": "pnpm --filter @canteengo/api prisma:migrate",
     "db:deploy": "pnpm --filter @canteengo/api prisma:deploy",
+    "db:init": "pnpm --filter @canteengo/api db:init",
     "db:setup": "pnpm db:deploy && pnpm db:seed",
     "db:seed": "pnpm --filter @canteengo/api db:seed"
   },

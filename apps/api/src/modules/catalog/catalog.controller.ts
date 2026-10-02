@@ -2,10 +2,9 @@ import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post,
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
-import { randomUUID } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { Public, Roles } from '../../common/auth.decorators';
+import { storeImage } from '../../common/image-storage';
 import { CatalogService } from './catalog.service';
 import { CreateCategoryDto, CreateComboDto, CreateProductDto, LinkOptionGroupDto, ProductOptionGroupDto, ProductQueryDto, ProductVariantDto, UpdateCategoryDto, UpdateComboDto, UpdateProductDto, UpsertRecipeDto } from './catalog.dto';
 
@@ -23,13 +22,17 @@ export class CatalogController {
     const signatures = { 'image/jpeg': [0xff, 0xd8, 0xff], 'image/png': [0x89, 0x50, 0x4e, 0x47], 'image/webp': [0x52, 0x49, 0x46, 0x46] } as const;
     const signature = signatures[file.mimetype as keyof typeof signatures];
     if (!signature.every((byte, index) => file.buffer[index] === byte) || (file.mimetype === 'image/webp' && file.buffer.toString('ascii', 8, 12) !== 'WEBP')) throw new BadRequestException('Nội dung tệp ảnh không hợp lệ.');
-    const extension = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }[file.mimetype as keyof typeof signatures];
     const imageDirectory = resolve(process.env.PRODUCT_IMAGE_DIR ?? resolve(__dirname, '../../../../../apps/web/public/images'));
-    await mkdir(imageDirectory, { recursive: true });
-    const filename = `menu-${randomUUID()}.${extension}`;
-    await writeFile(resolve(imageDirectory, filename), file.buffer, { flag: 'wx' });
     const imageUrlPrefix = (process.env.PRODUCT_IMAGE_URL_PREFIX ?? '/images').replace(/\/$/, '');
-    return { imageUrl: `${imageUrlPrefix}/${filename}` };
+    const imageUrl = await storeImage({
+      buffer: file.buffer,
+      mimetype: file.mimetype,
+      folder: 'products',
+      publicIdPrefix: 'menu',
+      localDirectory: imageDirectory,
+      localUrlPrefix: imageUrlPrefix,
+    });
+    return { imageUrl };
   }
 
   @ApiBearerAuth() @Roles(Role.ADMIN) @Post('admin/products') createProduct(@Body() dto: CreateProductDto) { return this.catalog.createProduct(dto); }

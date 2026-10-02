@@ -15,6 +15,7 @@ for (const candidate of [resolve(process.cwd(), '.env'), resolve(process.cwd(), 
 }
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: false });
+  app.set('trust proxy', 1);
   app.setGlobalPrefix('api');
   const origins = (process.env.WEB_ORIGIN || 'http://localhost:3000').split(',').map(value => value.trim());
   app.enableCors({ origin: origins, credentials: true });
@@ -23,12 +24,16 @@ async function bootstrap() {
   app.useStaticAssets(resolve(process.env.UPLOAD_DIR ?? './uploads'), { prefix: '/uploads/', dotfiles: 'deny', index: false, immutable: true, maxAge: '30d' });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }));
   app.useGlobalFilters(new ApiExceptionFilter());
-  const redisAdapter = new RedisIoAdapter(app, process.env.REDIS_URL ?? 'redis://127.0.0.1:6379');
-  try {
-    await redisAdapter.connect();
-    app.useWebSocketAdapter(redisAdapter);
-  } catch (error) {
-    Logger.warn(`Không kết nối được Redis adapter, Socket.IO chạy một tiến trình: ${String(error)}`, 'Bootstrap');
+  if (process.env.REDIS_URL) {
+    const redisAdapter = new RedisIoAdapter(app, process.env.REDIS_URL);
+    try {
+      await redisAdapter.connect();
+      app.useWebSocketAdapter(redisAdapter);
+    } catch (error) {
+      Logger.warn(`Không kết nối được Redis adapter, Socket.IO chạy một tiến trình: ${String(error)}`, 'Bootstrap');
+    }
+  } else {
+    Logger.log('REDIS_URL chưa được cấu hình; Socket.IO chạy trên một tiến trình.', 'Bootstrap');
   }
 
   const swaggerConfig = new DocumentBuilder()

@@ -1,13 +1,13 @@
 'use client';
 import { useEffect } from 'react';
 import { io } from 'socket.io-client';
-import { API_URL } from './api';
+import { SOCKET_URL } from './api';
 import { useAuthStore } from './auth-store';
 export function useRealtime(events: string[], onEvent: (event:string,payload:unknown)=>void, orderId?: string){
   const token=useAuthStore(s=>s.accessToken);
   useEffect(()=>{
     if(!token)return;
-    const socket=io(API_URL.replace(/\/api$/,''),{auth:{token},transports:['websocket']});
+    const socket=io(SOCKET_URL,{auth:{token},transports:['websocket']});
     const subscribe=()=>{if(orderId)socket.emit('order:subscribe',{orderId})};
     socket.on('connect',subscribe);
     for(const event of events)socket.on(event,(payload)=>onEvent(event,payload));
