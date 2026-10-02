@@ -109,7 +109,7 @@ Nếu nhận phản hồi thành công, API đã hoạt động. Render Free có
 1. Mở [Vercel Dashboard](https://vercel.com/dashboard).
 2. Chọn **Add New → Project**.
 3. Import repository `ChipBo118/CanteenPN`.
-4. Giữ **Root Directory** ở thư mục gốc repository để Vercel sử dụng `vercel.json` đã có.
+4. Đặt **Root Directory** thành `apps/web`. Giữ tùy chọn cho phép sử dụng file ngoài Root Directory để Vercel đọc workspace và lockfile ở thư mục gốc.
 5. Framework Preset phải là **Next.js**.
 6. Thêm hai biến môi trường sau cho Production và Preview:
 

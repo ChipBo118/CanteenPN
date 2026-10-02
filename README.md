@@ -43,7 +43,7 @@ Sau khi deploy, kiểm tra `https://<ten-dich-vu>.onrender.com/api/health`.
 
 ### 3. Deploy web lên Vercel
 
-Import cùng repository vào Vercel, giữ Root Directory ở thư mục gốc và thêm:
+Import cùng repository vào Vercel, đặt Root Directory là `apps/web` và thêm:
 
 | Biến | Giá trị |
 | --- | --- |
