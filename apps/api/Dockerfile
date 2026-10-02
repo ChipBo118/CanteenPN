@@ -13,5 +13,8 @@ RUN pnpm install --frozen-lockfile
 COPY apps/api apps/api
 RUN pnpm --filter @canteengo/api prisma:generate && pnpm --filter @canteengo/api build
 EXPOSE 3001
-CMD ["sh", "-c", "pnpm --filter @canteengo/api db:init && pnpm --filter @canteengo/api start"]
+# Render requires the web port to open quickly. Run the initial demo-data seed in
+# the background so a slow cross-region database connection cannot block health
+# checks. This is changed back to --if-empty after the first successful seed.
+CMD ["sh", "-c", "pnpm --filter @canteengo/api prisma:deploy && (pnpm --filter @canteengo/api db:seed &) && exec pnpm --filter @canteengo/api start"]
 
