@@ -2,9 +2,7 @@
 
 CanteenPN là hệ thống quản lý căng tin dành cho sinh viên và nhân viên nhà trường. Ứng dụng hỗ trợ toàn bộ quy trình từ xem thực đơn, đặt món, thanh toán và nhận món đến quản lý vận hành căng tin.
 
-Website chạy thử: [https://canteenpn.vercel.app](https://canteenpn.vercel.app)
-
-Hướng dẫn triển khai, nơi lưu mã nguồn, kiến trúc hosting và cách quản lý/bật/tắt hệ thống nằm trong [DEPLOY.md](./DEPLOY.md).
+Website: [https://canteenpn.vercel.app](https://canteenpn.vercel.app)
 
 ## Chức năng chính
 
@@ -47,8 +45,7 @@ Nên dùng nhiều cửa sổ trình duyệt hoặc cửa sổ ẩn danh để q
 ### 1. Kiểm tra website
 
 1. Mở [website CanteenPN](https://canteenpn.vercel.app).
-2. Lần truy cập đầu có thể mất khoảng 30–60 giây để dịch vụ miễn phí khởi động.
-3. Kiểm tra [API health](https://canteenpn.vercel.app/api/health). Kết quả hợp lệ có trường `"status":"ok"`.
+2. Lần truy cập đầu có thể mất khoảng 30–60 giây để khởi động.
 
 ### 2. Chạy thử luồng sinh viên đặt món
 
